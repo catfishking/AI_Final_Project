@@ -1,0 +1,33 @@
+.F_sprite
+{
+position:absolute;
+overflow:hidden;
+width:10px;
+height:10px;
+}
+.F_sprite_inline
+{
+overflow:hidden;
+width:10px;
+height:10px;
+}
+.F_sprite_img
+{
+position:absolute;
+}
+.canvas
+{
+position:relative;
+width:800px;
+/*height:577px;*/
+height:300px;
+border:1px solid #000;
+}
+.page
+{
+position: absolute;
+left: 0px;
+top: 0px;
+border: 1px solid #000;
+z-index: 10000;
+}
