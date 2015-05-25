@@ -29,6 +29,10 @@ function()
 		var opponent, myself = self;
 		var DfA_cost = 75, DdA_cost = 75, DfJ_cost = 150, DuJA_cost = 75;
 		var DuJA_flag = false;//DuJA needs delay
+		var dash_and_attack_flag = false;//dash towards and attack
+		var min_opponent_doging_dis = 200;
+		var flee_flag = false;
+		var z_range = 10, large_x_dis = 30, medium_x_dis = 15;
 		
 		function id() 
 		{
@@ -52,11 +56,10 @@ function()
 				}
 			}
 
-			
-			//for testing controller.keypress('att'); controller.keypress('jump'); console.log("after for"); console.log(target);
-			//TODO update min_opponent_doging_dis? dash_and_attack?
+			//for testing controller.keypress('att'); controller.keypress('jump'); console.log("after for"); console.log(target); approach(opponent.ps.x, opponent.ps.z, true);
 			/* Known info
-				attacks:DfA DdA DfJ DuJA dash_and_attack
+				attacks:DfA DdA DfJ DuJA(close to complete) dash_and_attack(not even started)
+				x-right+ z-down+
 				AI.js is useful
 				
 if(opponent not blinking)
@@ -68,13 +71,55 @@ if(opponent not blinking)
 		else
 			DdA
 	else
-		dash diag+attack
+		approach //update: distinguish between approach and flee
 else
-	get away from it diagonally
-
+	flee
 			*/
-			approach(opponent.ps.x, opponent.ps.y, true);
-			controller.keypress('att');
+			
+			//TODO (update min_opponent_doging_dis)? dash_and_attack? z_range?
+			
+			if(opponent.AI.blink() <= 1 && !flee_flag)
+			{
+				console.log("in if");
+				if( z_inrange() && (x_distance_to_opponent() <= min_opponent_doging_dis) )
+				{	
+					console.log("if again");
+					var temp_x = x_distance_to_opponent();
+					if(temp_x >= large_x_dis && myself.health.mp >= DfA_cost)
+					{
+						console.log("DfA");
+						DfA();
+					}
+					else if(temp_x >= medium_x_dis && myself.health.mp >= DfJ_cost)
+					{
+						console.log("DfJ");
+						DfJ();
+					}
+					else
+					{
+						console.log("DdA");
+						DdA();
+					}
+				}
+				else
+				{
+					console.log("aaing");
+					approach(opponent.ps.x, opponent.ps.z);
+				}
+			}
+			else
+			{
+				console.log("aaaaaaaaaaaaing");
+				flee_flag = true;
+				flee(opponent.ps.x, opponent.ps.z);
+				if(distance_to_opponent() >= 150*150 || opponent.AI.blink()<=1)
+				{
+					flee_flag = false;
+				}
+			}
+
+			
+			
 		}
 		
 //ooooooooooooooooooooooooooooooooooooooooooooooooold stuff
@@ -82,7 +127,6 @@ else
 		{
 			var dx = max(self.ps.x - max_x, min_x - self.ps.x);
 			var dz = max(self.ps.z - max_z, min_z - self.ps.z);
-			//var angle = atan2(var(dz), var(dx));
 			var run = (dx > run_stop_distance || abs(self.ps.x - target.ps.x) < 100) ? 0 : 1;
 
 			if (self.ps.x > max_x)
@@ -164,31 +208,74 @@ else
 				controller.keyseq(['def','up','jump']);
 			}
 		}
-
 //attacks
 
 //moves
-		function approach(x, y, bool)
+		function approach(x, z)//x->+ z-down+
 		{
-			if( (x > myself.ps.x && bool) || (x < myself.ps.x && !bool) )
+			if(x_distance_to_opponent() > z_distance_to_opponent())
 			{
-				controller.keypress('right',1,1);
+				if( x > myself.ps.x )
+				{
+					controller.keypress('right',1,1);
+				}
+				else
+				{
+					controller.keypress('left',1,1);
+				}
 			}
 			else
 			{
-				controller.keypress('left',1,1);
+				if( z > myself.ps.z )
+				{
+					controller.keypress('down',1,1);
+				}
+				else
+				{
+					controller.keypress('up',1,1);
+				}
 			}
 		}
+		function flee(x,z)
+		{
+			if(x_distance_to_opponent() < z_distance_to_opponent())
+			{
+				if( x < myself.ps.x )
+				{
+					controller.keypress('right',1,1);
+				}
+				else
+				{
+					controller.keypress('left',1,1);
+				}
+			}
+			else
+			{
+				if( z < myself.ps.z )
+				{
+					controller.keypress('down',1,1);
+				}
+				else
+				{
+					controller.keypress('up',1,1);
+				}
+			}
+		}
+		
 //moves
 
 //tools
-		function about(x)
+		function about(x)//old tool
 		{ 
 			return x + rand(x/10) - x/20; 
 		}
-		function rand(i)
+		function rand(i)//old tool from third_party/random.js
 		{
-			return Math.floor(match.random()*i);//from third_party/random.js
+			return Math.floor(match.random()*i);
+		}
+		function z_inrange()
+		{
+			return abs(opponent.ps.x - myself.ps.x) < z_range;
 		}
 		function identify(i)
 		{
@@ -205,7 +292,15 @@ else
 		function x_distance_to_opponent()
 		{
 			return abs(opponent.ps.x - myself.ps.x);
-		}		
+		}
+		function z_distance_to_opponent()
+		{
+			return abs(opponent.ps.z - myself.ps.z);
+		}
+		function distance_to_opponent()
+		{
+			return (opponent.ps.z - myself.ps.z)*(opponent.ps.z - myself.ps.z) + (opponent.ps.x - myself.ps.x)*(opponent.ps.x - myself.ps.x);
+		}
 		function facing_opponent()
 		{
 			return (self.AI.facing() && opponent.ps.x < self.ps.x) ||
