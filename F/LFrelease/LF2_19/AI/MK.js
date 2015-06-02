@@ -22,8 +22,8 @@ function()
 		// Usually beats standard Difficult AI
 		// based on Zort's, revised by MK
 		this.name = 'MEIKON 1.0';
-		this.designed_for = ['Deep'];//****
-		this.author = 'Zort&MK';
+		this.designed_for = ['Dais'];//****
+		this.author = 'MK';
 		
 		var game_objects = match.scene.live;
 
@@ -35,7 +35,7 @@ function()
 		var run_stop_distance;
 		
 		var opponent, myself = self;
-		var DfA_cost = 75, DdA_cost = 75, DfJ_cost = 150, DuJA_cost = 75;
+		var DfA_cost = 40, DdA_cost = 75, DuA_cost = 225, DuJA_cost = 25;
 		var DuJA_flag = false;//DuJA needs delay
 		var dash_and_attack_flag = false;//dash towards and attack
 		var min_opponent_doging_dis = 200;
@@ -63,10 +63,10 @@ function()
 					}
 				}
 			}
-
+			
 			//for testing controller.keypress('att'); controller.keypress('jump'); console.log("after for"); console.log(target); approach(opponent.ps.x, opponent.ps.z, true);
 			/* Known info
-				attacks:DfA DdA DfJ DuJA(close to complete) dash_and_attack(not even started)
+				attacks:DfA DdA DuA DuJA(close to complete) runA(not even started)
 				x-right+ z-down+
 				AI.js is useful
 				
@@ -192,15 +192,15 @@ else
 		{
 			controller.keyseq(['def','down','att']);
 		}
-		function DfJ()
+		function DuA()
 		{
 			if(opponent.ps.x - myself.ps.x > 0)
 			{
-				controller.keyseq(['def','right','jump']);
+				controller.keyseq(['right','def','up','jump']);
 			}
 			else
 			{
-				controller.keyseq(['def','left','jump']);
+				controller.keyseq(['left','def','up','jump']);
 			}
 		}
 		function DuJA()
