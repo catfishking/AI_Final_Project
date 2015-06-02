@@ -1,3 +1,11 @@
+/*
+references:
+http://www.masterbaboon.com/2009/04/my-ai-can-read-your-mind-part-1/
+http://www.masterbaboon.com/2009/05/my-ai-reads-your-mind-and-kicks-your-ass-part-2/
+http://www.masterbaboon.com/2009/09/my-ai-reads-your-mind-extensions-part-3/
+
+*/
+
 define(
 function()
 {
