@@ -13,7 +13,7 @@ function()
 	function clr() {}
 	function print(x)
 	{
-		//console.log('AI:'+x);
+		console.log('MKAI:'+x);
 	}
 	function AIscript(self,match,controller)
 	{
@@ -22,7 +22,7 @@ function()
 		// Usually beats standard Difficult AI
 		// based on Zort's, revised by MK
 		this.name = 'MEIKON 1.0';
-		this.designed_for = ['Dais'];//****
+		this.designed_for = ['Davis'];//****
 		this.author = 'MK';
 		
 		var game_objects = match.scene.live;
@@ -34,18 +34,19 @@ function()
 		var max_dash_blink;
 		var run_stop_distance;
 		
-		var opponent, myself = self;
+		var opponent;
 		var DfA_cost = 40, DdA_cost = 75, DuA_cost = 225, DuJA_cost = 25;
+		var DfA_rang = 50, DdA_rang = 90, DuA_rang = 60, runA_rang = 150;
 		var DuJA_flag = false;//DuJA needs delay
-		var dash_and_attack_flag = false;//dash towards and attack
+		var run_and_attack_flag = false;//run towards and attack
 		var min_opponent_doging_dis = 200;
 		var flee_flag = false;
-		var z_range = 10, large_x_dis = 30, medium_x_dis = 15;
+		var z_range = 40;
 		
 		function id() 
 		{
 			reset_keys();
-			
+						
 			min_dash_dx = about(70);
 			max_dash_dx = about(230);
 			min_dash_dz = about(5);
@@ -53,11 +54,11 @@ function()
 			max_dash_blink = 5;
 			run_stop_distance = about(30);
 			
-			for (var i in game_objects)//got opponent and myself
+			for (var i in game_objects)//got opponent
 			{ 
 				if (identify(i) == 0)//get opponent
 				{
-					if(game_objects[i].uid != myself.uid)
+					if(game_objects[i].uid != self.uid)
 					{
 						opponent = game_objects[i];
 					}
@@ -66,68 +67,195 @@ function()
 			
 			//for testing controller.keypress('att'); controller.keypress('jump'); console.log("after for"); console.log(target); approach(opponent.ps.x, opponent.ps.z, true);
 			/* Known info
-				attacks:DfA DdA DuA DuJA(close to complete) runA(not even started)
+				attacks:DfA DdA DuA DuJA runA JfA
 				x-right+ z-down+
 				AI.js is useful
+				state 0 standing, 1 is walking, 2 is running, 
+				3 is attacking, 4 is jump, 5 is leap
+				6 is rolling, 7 is defend, 8 broken defense, 9 is caught someone
+				10 is get caught, 11 is get hit, 12 is in the air, 13 none
+				14 is on the ground, 15 is getting up, 16 is stomachache
 				
-if(opponent not blinking)
-	if(mp has more && same z && dx <= min_opponent_doging_dis)
-		if(dx is large)
-			DfA
-		else if(dx is medium)
-			DfJ
-		else
-			DdA
-	else
-		approach //update: distinguish between approach and flee
-else
-	flee
+				ctimer=catching timer
+				
+				
+				catch and DuA
+				opponent flying blast it 
 			*/
 			
 			//TODO (update min_opponent_doging_dis)? dash_and_attack? z_range?
-			
-			if(opponent.AI.blink() <= 1 && !flee_flag)
+			// if(z_inrange() && self.state() <= 1) DfA();
+			switch(opponent.state())
 			{
-				console.log("in if");
-				if( z_inrange() && (x_distance_to_opponent() <= min_opponent_doging_dis) )
-				{	
-					console.log("if again");
-					var temp_x = x_distance_to_opponent();
-					if(temp_x >= large_x_dis && myself.health.mp >= DfA_cost)
+				case 0://standing
+				case 1://walking
+					if(self.state() === 2 && x_distance_to_opponent() < runA_rang && z_inrange())
 					{
-						console.log("DfA");
-						DfA();
-					}
-					else if(temp_x >= medium_x_dis && myself.health.mp >= DfJ_cost)
-					{
-						console.log("DfJ");
-						DfJ();
+						controller.keypress('att',1,1);
 					}
 					else
 					{
-						console.log("DdA");
+						if(opponent.ps.x - self.ps.x > 0)
+						{
+							run('right');
+						}
+						else
+						{
+							run('left');
+						}
+						
+						if(!z_inrange())
+						{
+							if(opponent.ps.z - self.ps.z > 0)
+							{
+								controller.keypress('down',1,1);
+							}
+							else
+							{
+								controller.keypress('up',1,1);
+							}
+						}
+					}				
+					break;
+				case 2://running
+//!!!!!!!!!!!!!!	
+					break;
+				case 3://attacking
+	//!!!!!!!!!!!!!!				
+					break;
+				case 4://jump
+				case 5://leap
+					if(z_inrange())
+					{
+						if(self.state() <= 1 && x_distance_to_opponent() < DuA_rang)
+						{
+							DuA();
+						}
+						else if(self.state() <= 1 && x_distance_to_opponent() < DdA_rang)
+						{
+							DdA();
+						}
+						else if(self.state() === 2 && x_distance_to_opponent() < runA_rang)
+						{
+							controller.keypress('att',1,1);
+						}
+						else
+						{
+							DfA();
+						}
+					}
+					else
+					{
+						if(opponent.ps.z - self.ps.z > 0)
+						{
+							controller.keypress('down',1,1);
+						}
+						else
+						{
+							controller.keypress('up',1,1);
+						}
+					}
+					break;
+				case 6://rolling
+					if(z_inrange() && self.state() <= 1)
+					{
+						DfA();
+					}
+					break;
+				case 7://defend
+					if(z_inrange())
+					{
+						if(self.health.mp > DuA_cost && x_distance_to_opponent() < DuA_rang)
+						{
+							DuA();
+						}
+						else if(self.health.mp > DdA_cost && x_distance_to_opponent() < DdA_rang)
+						{
+							DdA();
+						}
+						else if(self.health.mp > DfA_cost && probability(about(40)))
+						{
+							DfA();
+						}
+						else
+						{
+							controller.keypress('att');
+						}
+					}
+					else
+					{
+						if(opponent.ps.z - self.ps.z > 0)
+						{
+							controller.keypress('down',1,1);
+						}
+						else
+						{
+							controller.keypress('up',1,1);
+						}
+					}
+					break;
+				case 8://broken defense
+					controller.keypress('att',1,1);
+					break;
+				case 9://caught someone
+					DfA();
+					break;
+				case 10://get caught
+					if( self.health.mp >= DuA_cost && self.AI.ctimer() < 50)
+					{
+						DuA();
+					}
+					else if( self.health.mp >= DdA_cost && self.AI.ctimer() < 50)
+					{
 						DdA();
 					}
-				}
-				else
-				{
-					console.log("aaing");
-					approach(opponent.ps.x, opponent.ps.z);
-				}
+					else
+					{
+						controller.keypress('att',1,1);
+					}
+					break;
+				case 11://get hit
+					if( self.health.mp >= DdA_cost)
+					{
+						DdA();
+					}
+					else
+					{
+						controller.keypress('att',1,1);
+					}
+					break;
+				case 12://in the air
+					if( self.health.mp >= DuA_cost)
+					{
+						DuA();
+					}
+					else
+					{
+						controller.keypress('right',1,1);
+						controller.keypress('att',1,1);
+						controller.keypress('right',0,1);
+					}
+					break;
+				case 14://on the ground
+					//must be blinking then?
+//!!!!!!					
+					break;
+				case 15://getting up
+//!!!!!!!!!!!!!!					
+					break;
+				case 16://stomachache
+					if(opponent.ps.x - self.ps.x > 0)
+					{
+						controller.keypress('right',1,1);
+					}
+					else
+					{
+						controller.keypress('left',1,1);
+					}
+					break;
+				default:
+					controller.keypress('att',1,1);
 			}
-			else
-			{
-				console.log("aaaaaaaaaaaaing");
-				flee_flag = true;
-				flee(opponent.ps.x, opponent.ps.z);
-				if(distance_to_opponent() >= 150*150 || opponent.AI.blink()<=1)
-				{
-					flee_flag = false;
-				}
-			}
-
-			
-			
 		}
 		
 //ooooooooooooooooooooooooooooooooooooooooooooooooold stuff
@@ -179,7 +307,7 @@ else
 //attacks
 		function DfA()
 		{
-			if(opponent.ps.x - myself.ps.x > 0)
+			if(opponent.ps.x - self.ps.x > 0)
 			{
 				controller.keyseq(['def','right','att']);
 			}
@@ -190,30 +318,35 @@ else
 		}
 		function DdA()
 		{
-			controller.keyseq(['def','down','att']);
+			if(opponent.ps.x - self.ps.x > 0)
+			{
+				controller.keyseq(['right','def','down','att']);
+			}
+			else
+			{
+				controller.keyseq(['left','def','down','att']);
+			}
 		}
 		function DuA()
 		{
-			if(opponent.ps.x - myself.ps.x > 0)
+			if(opponent.ps.x - self.ps.x > 0)
+			{
+				controller.keyseq(['right','def','up','att']);
+			}
+			else
+			{
+				controller.keyseq(['left','def','up','att']);
+			}
+		}
+		function DuJA()
+		{
+			if(opponent.ps.x - self.ps.x > 0)
 			{
 				controller.keyseq(['right','def','up','jump']);
 			}
 			else
 			{
 				controller.keyseq(['left','def','up','jump']);
-			}
-		}
-		function DuJA()
-		{
-			if(opponent.ps.x - myself.ps.x > 0)
-			{
-				controller.keypress('right');
-				controller.keyseq(['def','up','jump']);
-			}
-			else
-			{
-				controller.keypress('left');
-				controller.keyseq(['def','up','jump']);
 			}
 		}
 //attacks
@@ -223,7 +356,7 @@ else
 		{
 			if(x_distance_to_opponent() > z_distance_to_opponent())
 			{
-				if( x > myself.ps.x )
+				if( x > self.ps.x )
 				{
 					controller.keypress('right',1,1);
 				}
@@ -234,7 +367,7 @@ else
 			}
 			else
 			{
-				if( z > myself.ps.z )
+				if( z > self.ps.z )
 				{
 					controller.keypress('down',1,1);
 				}
@@ -248,7 +381,7 @@ else
 		{
 			if(x_distance_to_opponent() < z_distance_to_opponent())
 			{
-				if( x < myself.ps.x )
+				if( x < self.ps.x )
 				{
 					controller.keypress('right',1,1);
 				}
@@ -259,7 +392,7 @@ else
 			}
 			else
 			{
-				if( z < myself.ps.z )
+				if( z < self.ps.z )
 				{
 					controller.keypress('down',1,1);
 				}
@@ -268,6 +401,10 @@ else
 					controller.keypress('up',1,1);
 				}
 			}
+		}
+		function run(direction)
+		{
+			controller.keyseq([direction, direction]);
 		}
 		
 //moves
@@ -283,7 +420,7 @@ else
 		}
 		function z_inrange()
 		{
-			return abs(opponent.ps.x - myself.ps.x) < z_range;
+			return abs(opponent.ps.x - self.ps.x) < z_range;
 		}
 		function identify(i)
 		{
@@ -293,21 +430,25 @@ else
 			}
 			return -1;
 		}		
+		function random(a,b)//a to b-1
+		{
+			return Math.floor(Math.random()*(b-a)) + a;
+		}
 		function probability(p)
 		{
 			return Math.floor(Math.random()*100) < p;
 		}
 		function x_distance_to_opponent()
 		{
-			return abs(opponent.ps.x - myself.ps.x);
+			return abs(opponent.ps.x - self.ps.x);
 		}
 		function z_distance_to_opponent()
 		{
-			return abs(opponent.ps.z - myself.ps.z);
+			return abs(opponent.ps.z - self.ps.z);
 		}
 		function distance_to_opponent()
 		{
-			return (opponent.ps.z - myself.ps.z)*(opponent.ps.z - myself.ps.z) + (opponent.ps.x - myself.ps.x)*(opponent.ps.x - myself.ps.x);
+			return (opponent.ps.z - self.ps.z)*(opponent.ps.z - self.ps.z) + (opponent.ps.x - self.ps.x)*(opponent.ps.x - self.ps.x);
 		}
 		function facing_opponent()
 		{
