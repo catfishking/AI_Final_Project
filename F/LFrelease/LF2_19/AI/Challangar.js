@@ -55,32 +55,24 @@ function()
 					}
 				}
 			}
-
-			//for testing controller.keypress('att'); controller.keypress('jump'); console.log("after for"); console.log(target); approach(opponent.ps.x, opponent.ps.z, true);
-			/* Known info
-				attacks:DfA DdA DfJ DuJA(close to complete) dash_and_attack(not even started)
-				x-right+ z-down+
-				AI.js is useful
-				
-if(opponent not blinking)
-	if(mp has more && same z && dx <= min_opponent_doging_dis)
-		if(dx is large)
-			DfA
-		else if(dx is medium)
-			DfJ
-		else
-			DdA
-	else
-		approach //update: distinguish between approach and flee
-else
-	flee
-			*/
-			
-			//TODO (update min_opponent_doging_dis)? dash_and_attack? z_range?
-			
+			if(self.state()===14)//14:lying
+				return;
+			if(opponent.AI.blink() || opponent.state()===14){
+				console.log('kai you lo?');
+				flee(opponent.ps.x,opponent.ps.z);
+				return;
+			}
+			if(face_opponent()){
+				return;
+			}
 			if(opponent.AI.blink() <= 1 && !flee_flag)
 			{
-				console.log("in if");
+		//			var toward = facing_opponent()? 'left':'right';
+				//console.log(self.ps.dir);
+				if(x_distance_to_opponent() <= 75){
+					controller.keypress('att');
+				}
+			/*	console.log("in if");
 				if( z_inrange() && (x_distance_to_opponent() <= min_opponent_doging_dis) )
 				{	
 					console.log("if again");
@@ -115,7 +107,7 @@ else
 				if(distance_to_opponent() >= 150*150 || opponent.AI.blink()<=1)
 				{
 					flee_flag = false;
-				}
+				}*/
 			}
 
 			
@@ -238,20 +230,23 @@ else
 		}
 		function flee(x,z)
 		{
-			if(x_distance_to_opponent() < z_distance_to_opponent())
+			controller.keypress('jump');
+			if(x_distance_to_opponent() < 100)
 			{
-				if( x < myself.ps.x )
-				{
-					controller.keypress('right',1,1);
-				}
-				else
+				console.log('flee1');
+				if( x >= myself.ps.x && myself.ps.x!==0)
 				{
 					controller.keypress('left',1,1);
 				}
+				else
+				{
+					controller.keypress('right',1,1);
+				}
 			}
-			else
+			else if(z_distance_to_opponent() < 20)
 			{
-				if( z < myself.ps.z )
+				console.log('flee2','dis:',z_distance_to_opponent(),'  z',z,' my_z:',self.ps.z);
+				if( z <= myself.ps.z && myself.ps.z!==510)
 				{
 					controller.keypress('down',1,1);
 				}
@@ -306,6 +301,21 @@ else
 			return (self.AI.facing() && opponent.ps.x < self.ps.x) ||
 				(!self.AI.facing() && opponent.ps.x > self.ps.x);
 		}
+		function face_opponent()
+		{
+			if(!facing_opponent()){
+				if(self.ps.dir==='left'){
+					console.log("press right");
+					controller.keypress('right');}
+				else{
+					console.log('press left');
+					controller.keypress('left');}
+				return 1;
+			}
+			return 0;
+
+		}
+
 		function reset_keys()
 		{
 			controller.keypress('att',0,0);
