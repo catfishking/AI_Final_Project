@@ -37,11 +37,7 @@ function()
 		var opponent;
 		var DfA_cost = 40, DdA_cost = 75, DuA_cost = 225, DuJA_cost = 25;
 		var DfA_rang = 50, DdA_rang = 90, DuA_rang = 60, runA_rang = 150;
-		var DuJA_flag = false;//DuJA needs delay
-		var run_and_attack_flag = false;//run towards and attack
-		var min_opponent_doging_dis = 200;
-		var flee_flag = false;
-		var z_range = 40;
+		var z_range = 12, flag_for_11 = true;
 		
 		function id() 
 		{
@@ -75,56 +71,124 @@ function()
 				6 is rolling, 7 is defend, 8 broken defense, 9 is caught someone
 				10 is get caught, 11 is get hit, 12 is in the air, 13 none
 				14 is on the ground, 15 is getting up, 16 is stomachache
-				
 				ctimer=catching timer
-				
-				
 				catch and DuA
 				opponent flying blast it 
 			*/
-			
-			//TODO (update min_opponent_doging_dis)? dash_and_attack? z_range?
-			// if(z_inrange() && self.state() <= 1) DfA();
+	//		print("self//"+self.state());			
+	//		print("oppo//"+opponent.state());			
+			//TODO (update min_opponent_doging_dis)? dash_and_attack? z_range?			
 			switch(opponent.state())
 			{
 				case 0://standing
 				case 1://walking
-					if(self.state() === 2 && x_distance_to_opponent() < runA_rang && z_inrange())
+					if(z_inrange())
 					{
-						controller.keypress('att',1,1);
-					}
-					else
-					{
-						if(opponent.ps.x - self.ps.x > 0)
+						if(self.state() === 2 && x_distance_to_opponent() < runA_rang )
 						{
-							run('right');
+							controller.keypress('att',1,1);
+						}
+						else if(self.health.mp > DuA_cost && x_distance_to_opponent() < DuA_rang  )
+						{
+							DuA();
+						}
+						else if(self.health.mp > DdA_cost && x_distance_to_opponent() < DdA_rang )
+						{
+							DdA();
+						}
+						else if(self.health.mp > DfA_cost && x_distance_to_opponent() < DfA_rang )
+						{
+							DfA();
+						}
+						else if(opponent.ps.x - self.ps.x > 0)
+						{
+							controller.keypress('right',1,1);
+							if(probability(about(25)))
+							{
+								controller.keypress('att',1,1);
+							}
 						}
 						else
 						{
-							run('left');
-						}
-						
-						if(!z_inrange())
+							controller.keypress('left',1,1);
+							if(probability(about(25)))
+							{
+								controller.keypress('att',1,1);
+							}
+						}	
+					}
+					else
+					{
+						if(opponent.ps.z - self.ps.z > 0)
 						{
-							if(opponent.ps.z - self.ps.z > 0)
-							{
-								controller.keypress('down',1,1);
-							}
-							else
-							{
-								controller.keypress('up',1,1);
-							}
+							controller.keypress('down',1,1);
 						}
-					}				
+						else
+						{
+							controller.keypress('up',1,1);
+						}
+					}	
 					break;
 				case 2://running
-//!!!!!!!!!!!!!!	
+					if(z_inrange())
+					{
+						if(self.state() === 2 && x_distance_to_opponent() < (runA_rang*1.5))
+						{
+							controller.keypress('att',1,1);
+						}
+						else if(self.state() <= 1 && x_distance_to_opponent() < runA_rang)//** oppo running
+						{
+							DdA();
+						}
+						else
+						{
+							DfA();
+						}
+					}
+					else
+					{
+						if(opponent.ps.z - self.ps.z > 0)
+						{
+							controller.keypress('down',1,1);
+						}
+						else
+						{
+							controller.keypress('up',1,1);
+						}
+					}
 					break;
 				case 3://attacking
-	//!!!!!!!!!!!!!!				
+					//console.log("aaaaaaa");
+					if(z_inrange())
+					{
+						if(self.state() === 2 && x_distance_to_opponent() < runA_rang)
+						{
+							controller.keypress('att',1,1);
+						}
+						else if(self.state() <= 1 && x_distance_to_opponent() < runA_rang)//** oppo running
+						{
+							DdA();
+						}
+						else
+						{
+							approach(opponent.ps.x, opponent.ps.z);
+						}
+					}
+					else
+					{
+						if(opponent.ps.z - self.ps.z > 0)
+						{
+							controller.keypress('down',1,1);
+						}
+						else
+						{
+							controller.keypress('up',1,1);
+						}
+					}
 					break;
 				case 4://jump
 				case 5://leap
+				//	print("55555555555"+z_distance_to_opponent());
 					if(z_inrange())
 					{
 						if(self.state() <= 1 && x_distance_to_opponent() < DuA_rang)
@@ -161,6 +225,10 @@ function()
 					{
 						DfA();
 					}
+					else
+					{
+						controller.keypress('att',1,1);
+					}
 					break;
 				case 7://defend
 					if(z_inrange())
@@ -179,7 +247,7 @@ function()
 						}
 						else
 						{
-							controller.keypress('att');
+							controller.keypress('att',1,1);
 						}
 					}
 					else
@@ -215,19 +283,26 @@ function()
 					}
 					break;
 				case 11://get hit
-					if( self.health.mp >= DdA_cost)
+					if(flag_for_11 && self.health.mp >= DdA_cost)
 					{
 						DdA();
+						flag_for_11 = false;
+					}
+					else if(self.health.mp >= DuA_cost)
+					{
+						DuA();
+						flag_for_11 = true;
 					}
 					else
 					{
 						controller.keypress('att',1,1);
+						flag_for_11 = true;
 					}
 					break;
 				case 12://in the air
-					if( self.health.mp >= DuA_cost)
+					if(self.health.mp >= DfA_cost && probability(30))
 					{
-						DuA();
+						DfA();
 					}
 					else
 					{
@@ -238,10 +313,35 @@ function()
 					break;
 				case 14://on the ground
 					//must be blinking then?
-//!!!!!!					
+					flee(opponent.ps.x, opponent.ps.z);
 					break;
 				case 15://getting up
-//!!!!!!!!!!!!!!					
+					if(opponent.AI.blink() != 0)
+					{
+						flee(opponent.ps.x, opponent.ps.z);
+					}
+					else
+					{
+						if(z_inrange())
+						{
+							if(self.state() === 2 && x_distance_to_opponent() < runA_rang)
+							{
+								controller.keypress('att',1,1);
+							}
+							else if(self.state() <= 1 && x_distance_to_opponent() < DfA_rang)
+							{
+								DfA();
+							}
+							else
+							{
+								approach(opponent.ps.x, opponent.ps.z);
+							}		
+						}
+						else
+						{
+							approach(opponent.ps.x, opponent.ps.z);
+						}
+					}
 					break;
 				case 16://stomachache
 					if(opponent.ps.x - self.ps.x > 0)
@@ -257,7 +357,6 @@ function()
 					controller.keypress('att',1,1);
 			}
 		}
-		
 //ooooooooooooooooooooooooooooooooooooooooooooooooold stuff
 		function get_to(min_x,max_x,min_z,max_z)
 		{
@@ -379,20 +478,20 @@ function()
 		}
 		function flee(x,z)
 		{
-			if(x_distance_to_opponent() < z_distance_to_opponent())
+			if(x_distance_to_opponent() < z_distance_to_opponent()*3 || probability(20))
 			{
-				if( x < self.ps.x )
+				if( x > self.ps.x && self.ps.x <= 1500 )
 				{
-					controller.keypress('right',1,1);
+					controller.keypress('left',1,1);
 				}
 				else
 				{
-					controller.keypress('left',1,1);
+					controller.keypress('right',1,1);
 				}
 			}
 			else
 			{
-				if( z < self.ps.z )
+				if( z > self.ps.z && self.ps.z <= 430)
 				{
 					controller.keypress('down',1,1);
 				}
@@ -420,7 +519,7 @@ function()
 		}
 		function z_inrange()
 		{
-			return abs(opponent.ps.x - self.ps.x) < z_range;
+			return abs(opponent.ps.z - self.ps.z) < z_range;
 		}
 		function identify(i)
 		{
