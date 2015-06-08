@@ -93,17 +93,20 @@ function()
 			for(var kkey in current)
 			{
 				temp_sum += current[kkey];
-				console.log(current[kkey]);
+				console.log("kkey = "+kkey);
+				console.log("current[kkey] = "+current[kkey]);
 			}
 			console.log(temp_sum);
 			for(var kkey in current)
 			{
 				console.log("QQQQQ");
-				console.log(current[kkey]/temp_sum);
+				console.log("current[kkey]/temp_sum = "+current[kkey]/temp_sum);
 				if(probability((current[kkey]/temp_sum)*100))
 				{
 					console.log("true");
 					decision_buffer.push({state:opponent.state(), method:kkey});
+					console.log(decision_buffer[0]);
+					console.log("decision_buffer = "+decision_buffer);
 					switch(kkey)
 					{
 						case "Mk":
@@ -114,6 +117,7 @@ function()
 							break;
 					}
 				}
+				temp_sum -= current[kkey];
 			}
 		}
 
