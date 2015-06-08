@@ -79,15 +79,15 @@ function()
 			console.log(opponent.state());
 			switch(opponent.state() ){
 				case 0://standing
-					approach(opponent.ps.x,opponent.ps.z);
+					BEapproach(opponent.ps.x,opponent.ps.z);
 					attack();
 					break;
 				case 1://walking
-					approach(opponent.ps.x,opponent.ps.z);
+					BEapproach(opponent.ps.x,opponent.ps.z);
 					attack();
 					break;
 				case 2://running
-					approach(opponent.ps.x,opponent.ps.z);
+					BEapproach(opponent.ps.x,opponent.ps.z);
 					attack();
 					break;
 				case 3://attack
@@ -95,18 +95,18 @@ function()
 					controller.keypress('att');
 					break;
 				case 4://jump
-					approach(opponent.ps.x,opponent.ps.z);
+					BEapproach(opponent.ps.x,opponent.ps.z);
 					attack();
 					break;
 				case 5://small jump ; dash
 					attack();
 					break;
 				case 6://rowing
-					approach(opponent.ps.x,opponent.ps.z);
+					BEapproach(opponent.ps.x,opponent.ps.z);
 					attack();
 					break;
 				case 7://defending
-					approach(opponent.ps.x,opponent.ps.z);
+					BEapproach(opponent.ps.x,opponent.ps.z);
 					attack();
 					break;
 				case 8://broken defend
@@ -121,14 +121,14 @@ function()
 					controller.keypress('att');
 					break;
 				case 12://falling
-					approach(opponent.ps.x,opponent.ps.z);
+					BEapproach(opponent.ps.x,opponent.ps.z);
 					attack();
 					break;
 				case 14://lying
-					flee(opponent.ps.x,opponent.ps.z);
+					BEflee(opponent.ps.x,opponent.ps.z);
 					break;
 				case 15://return move
-					approach(opponent.ps.x,opponent.ps.z);
+					BEapproach(opponent.ps.x,opponent.ps.z);
 					attack();
 					break;
 				case 16:
@@ -243,7 +243,7 @@ function()
 //attacks
 
 //moves
-		function approach(x, z)//x->+ z-down+
+		function BEapproach(x, z)//x->+ z-down+
 		{
 			if(x_distance_to_opponent() > 320){
 				if( x > self.ps.x )
@@ -265,7 +265,7 @@ function()
 			}
 		}
 
-		function flee(x,z)
+		function BEflee(x,z)
 		{
 			controller.keypress('jump');
 			if(x_distance_to_opponent() < 100)
