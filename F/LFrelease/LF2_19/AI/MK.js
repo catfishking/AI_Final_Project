@@ -25,85 +25,67 @@ function()
 		this.designed_for = ['Davis'];//****
 		this.author = 'MK';
 		
-		var game_objects = match.scene.live;
-
-		var min_dash_dx;
-		var max_dash_dx;
-		var min_dash_dz;
-		var max_dash_dz;
-		var max_dash_blink;
-		var run_stop_distance;
-		
-		var opponent;
-		var DfA_cost = 40, DdA_cost = 75, DuA_cost = 225, DuJA_cost = 25;
-		var DfA_rang = 50, DdA_rang = 90, DuA_rang = 60, runA_rang = 150;
-		var z_range = 12, flag_for_11 = true;
+		var MK_game_objects = match.scene.live;
+		var MK_opponent;
+		var MK_DfA_cost = 40, MK_DdA_cost = 75, MK_DuA_cost = 225, MK_DuJA_cost = 25;
+		var MK_DfA_rang = 50, MK_DdA_rang = 90, MK_DuA_rang = 60, MK_MK_runA_rang = 150;
+		var MK_z_range = 12, MK_flag_for_11 = true;
 		
 		function id() 
 		{
 			reset_keys();
-						
-			min_dash_dx = about(70);
-			max_dash_dx = about(230);
-			min_dash_dz = about(5);
-			max_dash_dz = about(40);
-			max_dash_blink = 5;
-			run_stop_distance = about(30);
-			
-			for (var i in game_objects)//got opponent
+			for (var i in MK_game_objects)//got MK_opponent
 			{ 
-				if (identify(i) == 0)//get opponent
+				if (identify(i) == 0)//get MK_opponent
 				{
-					if(game_objects[i].uid != self.uid)
+					if(MK_game_objects[i].uid != self.uid)
 					{
-						opponent = game_objects[i];
+						MK_opponent = MK_game_objects[i];
 					}
 				}
 			}
 			
-			//for testing controller.keypress('att'); controller.keypress('jump'); console.log("after for"); console.log(target); approach(opponent.ps.x, opponent.ps.z, true);
+			//for testing controller.keypress('att'); controller.keypress('jump'); console.log("after for"); console.log(target); MK_approach(MK_opponent.ps.x, MK_opponent.ps.z, true);
 			/* Known info
-				attacks:DfA DdA DuA DuJA runA JfA
+				attacks:DfA DdA DuA DuJA MK_runA JfA
 				x-right+ z-down+
 				AI.js is useful
-				state 0 standing, 1 is walking, 2 is running, 
+				state 0 standing, 1 is walking, 2 is MK_running, 
 				3 is attacking, 4 is jump, 5 is leap
 				6 is rolling, 7 is defend, 8 broken defense, 9 is caught someone
 				10 is get caught, 11 is get hit, 12 is in the air, 13 none
 				14 is on the ground, 15 is getting up, 16 is stomachache
 				ctimer=catching timer
 				catch and DuA
-				opponent flying blast it 
+				MK_opponent flying blast it 
 			*/
-	//		print("self//"+self.state());			
-	//		print("oppo//"+opponent.state());			
-			//TODO (update min_opponent_doging_dis)? dash_and_attack? z_range?			
-			switch(opponent.state())
+	//		print("self//"+self.state());print("oppo//"+MK_opponent.state());	
+			switch(MK_opponent.state())
 			{
 				case 0://standing
 				case 1://walking
-					if(z_inrange())
+					if(MK_z_inrange())
 					{
-						if(self.state() === 2 && x_distance_to_opponent() < runA_rang )
+						if(self.state() === 2 && x_distance_to_MK_opponent() < MK_MK_runA_rang )
 						{
 							controller.keypress('att',1,1);
 						}
-						else if(self.health.mp > DuA_cost && x_distance_to_opponent() < DuA_rang  )
+						else if(self.health.mp > MK_DuA_cost && x_distance_to_MK_opponent() < MK_DuA_rang  )
 						{
-							DuA();
+							MK_DuA();
 						}
-						else if(self.health.mp > DdA_cost && x_distance_to_opponent() < DdA_rang )
+						else if(self.health.mp > MK_DdA_cost && x_distance_to_MK_opponent() < MK_DdA_rang )
 						{
-							DdA();
+							MK_DdA();
 						}
-						else if(self.health.mp > DfA_cost && x_distance_to_opponent() < DfA_rang )
+						else if(self.health.mp > MK_DfA_cost && x_distance_to_MK_opponent() < MK_DfA_rang )
 						{
-							DfA();
+							MK_DfA();
 						}
-						else if(opponent.ps.x - self.ps.x > 0)
+						else if(MK_opponent.ps.x - self.ps.x > 0)
 						{
 							controller.keypress('right',1,1);
-							if(probability(about(25)))
+							if(MK_probability(about(25)))
 							{
 								controller.keypress('att',1,1);
 							}
@@ -111,7 +93,7 @@ function()
 						else
 						{
 							controller.keypress('left',1,1);
-							if(probability(about(25)))
+							if(MK_probability(about(25)))
 							{
 								controller.keypress('att',1,1);
 							}
@@ -119,7 +101,7 @@ function()
 					}
 					else
 					{
-						if(opponent.ps.z - self.ps.z > 0)
+						if(MK_opponent.ps.z - self.ps.z > 0)
 						{
 							controller.keypress('down',1,1);
 						}
@@ -129,25 +111,25 @@ function()
 						}
 					}	
 					break;
-				case 2://running
-					if(z_inrange())
+				case 2://MK_running
+					if(MK_z_inrange())
 					{
-						if(self.state() === 2 && x_distance_to_opponent() < (runA_rang*1.5))
+						if(self.state() === 2 && x_distance_to_MK_opponent() < (MK_MK_runA_rang*1.5))
 						{
 							controller.keypress('att',1,1);
 						}
-						else if(self.state() <= 1 && x_distance_to_opponent() < runA_rang)//** oppo running
+						else if(self.state() <= 1 && x_distance_to_MK_opponent() < MK_MK_runA_rang)//** oppo MK_running
 						{
-							DdA();
+							MK_DdA();
 						}
 						else
 						{
-							DfA();
+							MK_DfA();
 						}
 					}
 					else
 					{
-						if(opponent.ps.z - self.ps.z > 0)
+						if(MK_opponent.ps.z - self.ps.z > 0)
 						{
 							controller.keypress('down',1,1);
 						}
@@ -158,25 +140,24 @@ function()
 					}
 					break;
 				case 3://attacking
-					//console.log("aaaaaaa");
-					if(z_inrange())
+					if(MK_z_inrange())
 					{
-						if(self.state() === 2 && x_distance_to_opponent() < runA_rang)
+						if(self.state() === 2 && x_distance_to_MK_opponent() < MK_MK_runA_rang)
 						{
 							controller.keypress('att',1,1);
 						}
-						else if(self.state() <= 1 && x_distance_to_opponent() < runA_rang)//** oppo running
+						else if(self.state() <= 1 && x_distance_to_MK_opponent() < MK_MK_runA_rang)//** oppo MK_running
 						{
-							DdA();
+							MK_DdA();
 						}
 						else
 						{
-							approach(opponent.ps.x, opponent.ps.z);
+							MK_approach(MK_opponent.ps.x, MK_opponent.ps.z);
 						}
 					}
 					else
 					{
-						if(opponent.ps.z - self.ps.z > 0)
+						if(MK_opponent.ps.z - self.ps.z > 0)
 						{
 							controller.keypress('down',1,1);
 						}
@@ -188,29 +169,28 @@ function()
 					break;
 				case 4://jump
 				case 5://leap
-				//	print("55555555555"+z_distance_to_opponent());
-					if(z_inrange())
+					if(MK_z_inrange())
 					{
-						if(self.state() <= 1 && x_distance_to_opponent() < DuA_rang)
+						if(self.state() <= 1 && x_distance_to_MK_opponent() < MK_DuA_rang)
 						{
-							DuA();
+							MK_DuA();
 						}
-						else if(self.state() <= 1 && x_distance_to_opponent() < DdA_rang)
+						else if(self.state() <= 1 && x_distance_to_MK_opponent() < MK_DdA_rang)
 						{
-							DdA();
+							MK_DdA();
 						}
-						else if(self.state() === 2 && x_distance_to_opponent() < runA_rang)
+						else if(self.state() === 2 && x_distance_to_MK_opponent() < MK_MK_runA_rang)
 						{
 							controller.keypress('att',1,1);
 						}
 						else
 						{
-							DfA();
+							MK_DfA();
 						}
 					}
 					else
 					{
-						if(opponent.ps.z - self.ps.z > 0)
+						if(MK_opponent.ps.z - self.ps.z > 0)
 						{
 							controller.keypress('down',1,1);
 						}
@@ -221,9 +201,9 @@ function()
 					}
 					break;
 				case 6://rolling
-					if(z_inrange() && self.state() <= 1)
+					if(MK_z_inrange() && self.state() <= 1)
 					{
-						DfA();
+						MK_DfA();
 					}
 					else
 					{
@@ -231,19 +211,19 @@ function()
 					}
 					break;
 				case 7://defend
-					if(z_inrange())
+					if(MK_z_inrange())
 					{
-						if(self.health.mp > DuA_cost && x_distance_to_opponent() < DuA_rang)
+						if(self.health.mp > MK_DuA_cost && x_distance_to_MK_opponent() < MK_DuA_rang)
 						{
-							DuA();
+							MK_DuA();
 						}
-						else if(self.health.mp > DdA_cost && x_distance_to_opponent() < DdA_rang)
+						else if(self.health.mp > MK_DdA_cost && x_distance_to_MK_opponent() < MK_DdA_rang)
 						{
-							DdA();
+							MK_DdA();
 						}
-						else if(self.health.mp > DfA_cost && probability(about(40)))
+						else if(self.health.mp > MK_DfA_cost && MK_probability(about(40)))
 						{
-							DfA();
+							MK_DfA();
 						}
 						else
 						{
@@ -252,7 +232,7 @@ function()
 					}
 					else
 					{
-						if(opponent.ps.z - self.ps.z > 0)
+						if(MK_opponent.ps.z - self.ps.z > 0)
 						{
 							controller.keypress('down',1,1);
 						}
@@ -266,16 +246,16 @@ function()
 					controller.keypress('att',1,1);
 					break;
 				case 9://caught someone
-					DfA();
+					MK_DfA();
 					break;
 				case 10://get caught
-					if( self.health.mp >= DuA_cost && self.AI.ctimer() < 50)
+					if( self.health.mp >= MK_DuA_cost && self.AI.ctimer() < 50)
 					{
-						DuA();
+						MK_DuA();
 					}
-					else if( self.health.mp >= DdA_cost && self.AI.ctimer() < 50)
+					else if( self.health.mp >= MK_DdA_cost && self.AI.ctimer() < 50)
 					{
-						DdA();
+						MK_DdA();
 					}
 					else
 					{
@@ -283,26 +263,26 @@ function()
 					}
 					break;
 				case 11://get hit
-					if(flag_for_11 && self.health.mp >= DdA_cost)
+					if(MK_flag_for_11 && self.health.mp >= MK_DdA_cost)
 					{
-						DdA();
-						flag_for_11 = false;
+						MK_DdA();
+						MK_flag_for_11 = false;
 					}
-					else if(self.health.mp >= DuA_cost)
+					else if(self.health.mp >= MK_DuA_cost)
 					{
-						DuA();
-						flag_for_11 = true;
+						MK_DuA();
+						MK_flag_for_11 = true;
 					}
 					else
 					{
 						controller.keypress('att',1,1);
-						flag_for_11 = true;
+						MK_flag_for_11 = true;
 					}
 					break;
 				case 12://in the air
-					if(self.health.mp >= DfA_cost && probability(30))
+					if(self.health.mp >= MK_DfA_cost && MK_probability(30))
 					{
-						DfA();
+						MK_DfA();
 					}
 					else
 					{
@@ -313,38 +293,38 @@ function()
 					break;
 				case 14://on the ground
 					//must be blinking then?
-					flee(opponent.ps.x, opponent.ps.z);
+					MK_flee(MK_opponent.ps.x, MK_opponent.ps.z);
 					break;
 				case 15://getting up
-					if(opponent.AI.blink() != 0)
+					if(MK_opponent.AI.blink() != 0)
 					{
-						flee(opponent.ps.x, opponent.ps.z);
+						MK_flee(MK_opponent.ps.x, MK_opponent.ps.z);
 					}
 					else
 					{
-						if(z_inrange())
+						if(MK_z_inrange())
 						{
-							if(self.state() === 2 && x_distance_to_opponent() < runA_rang)
+							if(self.state() === 2 && x_distance_to_MK_opponent() < MK_MK_runA_rang)
 							{
 								controller.keypress('att',1,1);
 							}
-							else if(self.state() <= 1 && x_distance_to_opponent() < DfA_rang)
+							else if(self.state() <= 1 && x_distance_to_MK_opponent() < MK_DfA_rang)
 							{
-								DfA();
+								MK_DfA();
 							}
 							else
 							{
-								approach(opponent.ps.x, opponent.ps.z);
+								MK_approach(MK_opponent.ps.x, MK_opponent.ps.z);
 							}		
 						}
 						else
 						{
-							approach(opponent.ps.x, opponent.ps.z);
+							MK_approach(MK_opponent.ps.x, MK_opponent.ps.z);
 						}
 					}
 					break;
 				case 16://stomachache
-					if(opponent.ps.x - self.ps.x > 0)
+					if(MK_opponent.ps.x - self.ps.x > 0)
 					{
 						controller.keypress('right',1,1);
 					}
@@ -357,56 +337,11 @@ function()
 					controller.keypress('att',1,1);
 			}
 		}
-//ooooooooooooooooooooooooooooooooooooooooooooooooold stuff
-		function get_to(min_x,max_x,min_z,max_z)
-		{
-			var dx = max(self.ps.x - max_x, min_x - self.ps.x);
-			var dz = max(self.ps.z - max_z, min_z - self.ps.z);
-			var run = (dx > run_stop_distance || abs(self.ps.x - target.ps.x) < 100) ? 0 : 1;
-
-			if (self.ps.x > max_x)
-			{
-				controller.keypress('left',1,run);
-				if( run===0) 
-				{
-					controller.keypress('left',1,run);
-				}
-			}
-			else if (self.ps.x < min_x) 
-			{
-				controller.keypress('right',1,run);
-				if( run===0) 
-				{
-					controller.keypress('right',1,run);
-				}
-			}
-
-			if (self.ps.z > max_z) 
-			{
-				controller.keypress('up',1,run);
-			}
-			else if (self.ps.z < min_z) 
-			{
-				controller.keypress('down',1,run);
-			}
-		}   
-
-		function ready_to_dash()
-		{
-			// four acceptable regions to dash from
-			var dx = abs(target.ps.x - self.ps.x);
-			var dz = abs(target.ps.z - self.ps.z);
-			return (self.state() == 0 || self.state() == 1 || self.state() == 2 || self.frame.N == 215) &&
-				(target.state() != 14 && target.AI.blink() < 2) && 
-				((min_dash_dx <= dx && dx <= max_dash_dx) && (min_dash_dz <= dz && dz <= max_dash_dz) ||
-				 (facing_target() && self.state() == 2));
-		}
-//=================================================================================		
 
 //attacks
-		function DfA()
+		function MK_DfA()
 		{
-			if(opponent.ps.x - self.ps.x > 0)
+			if(MK_opponent.ps.x - self.ps.x > 0)
 			{
 				controller.keyseq(['def','right','att']);
 			}
@@ -415,9 +350,9 @@ function()
 				controller.keyseq(['def','left','att']);
 			}
 		}
-		function DdA()
+		function MK_DdA()
 		{
-			if(opponent.ps.x - self.ps.x > 0)
+			if(MK_opponent.ps.x - self.ps.x > 0)
 			{
 				controller.keyseq(['right','def','down','att']);
 			}
@@ -426,9 +361,9 @@ function()
 				controller.keyseq(['left','def','down','att']);
 			}
 		}
-		function DuA()
+		function MK_DuA()
 		{
-			if(opponent.ps.x - self.ps.x > 0)
+			if(MK_opponent.ps.x - self.ps.x > 0)
 			{
 				controller.keyseq(['right','def','up','att']);
 			}
@@ -437,9 +372,9 @@ function()
 				controller.keyseq(['left','def','up','att']);
 			}
 		}
-		function DuJA()
+		function MK_DuJA()
 		{
-			if(opponent.ps.x - self.ps.x > 0)
+			if(MK_opponent.ps.x - self.ps.x > 0)
 			{
 				controller.keyseq(['right','def','up','jump']);
 			}
@@ -451,9 +386,9 @@ function()
 //attacks
 
 //moves
-		function approach(x, z)//x->+ z-down+
+		function MK_approach(x, z)//x->+ z-down+
 		{
-			if(x_distance_to_opponent() > z_distance_to_opponent())
+			if(x_distance_to_MK_opponent() > z_distance_to_MK_opponent())
 			{
 				if( x > self.ps.x )
 				{
@@ -476,9 +411,9 @@ function()
 				}
 			}
 		}
-		function flee(x,z)
+		function MK_flee(x,z)
 		{
-			if(x_distance_to_opponent() < z_distance_to_opponent()*3 || probability(20))
+			if(x_distance_to_MK_opponent() < z_distance_to_MK_opponent()*3 || MK_probability(20))
 			{
 				if( x > self.ps.x && self.ps.x <= 1500 )
 				{
@@ -501,7 +436,7 @@ function()
 				}
 			}
 		}
-		function run(direction)
+		function MK_run(direction)
 		{
 			controller.keyseq([direction, direction]);
 		}
@@ -517,15 +452,15 @@ function()
 		{
 			return Math.floor(match.random()*i);
 		}
-		function z_inrange()
+		function MK_z_inrange()
 		{
-			return abs(opponent.ps.z - self.ps.z) < z_range;
+			return abs(MK_opponent.ps.z - self.ps.z) < MK_z_range;
 		}
 		function identify(i)
 		{
-			if( game_objects[i])
+			if( MK_game_objects[i])
 			{
-				return game_objects[i].AI.type();
+				return MK_game_objects[i].AI.type();
 			}
 			return -1;
 		}		
@@ -533,26 +468,26 @@ function()
 		{
 			return Math.floor(Math.random()*(b-a)) + a;
 		}
-		function probability(p)
+		function MK_probability(p)
 		{
 			return Math.floor(Math.random()*100) < p;
 		}
-		function x_distance_to_opponent()
+		function x_distance_to_MK_opponent()
 		{
-			return abs(opponent.ps.x - self.ps.x);
+			return abs(MK_opponent.ps.x - self.ps.x);
 		}
-		function z_distance_to_opponent()
+		function z_distance_to_MK_opponent()
 		{
-			return abs(opponent.ps.z - self.ps.z);
+			return abs(MK_opponent.ps.z - self.ps.z);
 		}
-		function distance_to_opponent()
+		function distance_to_MK_opponent()
 		{
-			return (opponent.ps.z - self.ps.z)*(opponent.ps.z - self.ps.z) + (opponent.ps.x - self.ps.x)*(opponent.ps.x - self.ps.x);
+			return (MK_opponent.ps.z - self.ps.z)*(MK_opponent.ps.z - self.ps.z) + (MK_opponent.ps.x - self.ps.x)*(MK_opponent.ps.x - self.ps.x);
 		}
-		function facing_opponent()
+		function facing_MK_opponent()
 		{
-			return (self.AI.facing() && opponent.ps.x < self.ps.x) ||
-				(!self.AI.facing() && opponent.ps.x > self.ps.x);
+			return (self.AI.facing() && MK_opponent.ps.x < self.ps.x) ||
+				(!self.AI.facing() && MK_opponent.ps.x > self.ps.x);
 		}
 		function reset_keys()
 		{
