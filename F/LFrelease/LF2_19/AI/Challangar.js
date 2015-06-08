@@ -14,7 +14,7 @@ function()
 		this.author = 'QAQQQ';
 		
 		var game_objects = match.scene.live;
-		var opponent;
+		var opponent, myself = self;
 		var DfA_cost = 40, DdA_cost = 75, DuA_cost = 225, DuJA_cost = 25;
 		var MK_DfA_rang = 50, MK_DdA_rang = 90, MK_DuA_rang = 60, MK_runA_rang = 150;
 		var MK_z_range = 12, MK_flag_for_11 = true;
@@ -89,15 +89,20 @@ function()
 			//select an algorithm
 			var temp_sum = 0, temp = 0;
 			var current = current_prob[opponent.state()];
+			console.log(current);
 			for(var kkey in current)
 			{
-				temp_sum += current_prob[opponent.state()].kkey;	
+				temp_sum += current[kkey];
+				console.log(current[kkey]);
 			}
 			console.log(temp_sum);
 			for(var kkey in current)
 			{
-				if(probability(current.kkey/temp_sum))
+				console.log("QQQQQ");
+				console.log(current[kkey]/temp_sum);
+				if(probability((current[kkey]/temp_sum)*100))
 				{
+					console.log("true");
 					decision_buffer.push({state:opponent.state(), method:kkey});
 					switch(kkey)
 					{
