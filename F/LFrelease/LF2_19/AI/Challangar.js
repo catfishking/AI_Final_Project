@@ -55,9 +55,12 @@ function()
 				}
 			}
 			
+			//console.log("hp = "+self.health.hp);
+			//console.log("oppo hp = "+opponent.health.hp);
 			//print the result when one's blood === 0
-			if(self.health.hp === 0 || opponent.health.hp === 0)
+			if(self.health.hp <= 0 || opponent.health.hp <= 0)
 			{
+				console.log("ADSFdsaffdasfadsfasdfdsfsafafs");
 				console.log("[");
 				for(var i = 0; i <= 16; i = i + 1)
 				{
@@ -72,7 +75,7 @@ function()
 				for(var i = 0; i < decision_buffer.length; i = i + 1)
 				{
 					var temp = decision_buffer[i].method;
-					current_prob[(decision_buffer[i].state)].temp += i*2;
+					current_prob[(decision_buffer[i].state)][temp] += i*2;
 				}
 				decision_buffer = [];//clear
 			}
@@ -81,7 +84,7 @@ function()
 				for(var i = 0; i < decision_buffer.length; i = i + 1)
 				{
 					var temp = decision_buffer[i].method;
-					current_prob[(decision_buffer[i].state)].temp -= i*2;
+					current_prob[(decision_buffer[i].state)][temp] -= i*2;
 				}
 				decision_buffer = [];//clear
 			}
@@ -89,24 +92,24 @@ function()
 			//select an algorithm
 			var temp_sum = 0, temp = 0;
 			var current = current_prob[opponent.state()];
-			console.log(current);
+			//console.log(current);
 			for(var kkey in current)
 			{
 				temp_sum += current[kkey];
-				console.log("kkey = "+kkey);
-				console.log("current[kkey] = "+current[kkey]);
+				//console.log("kkey = "+kkey);
+				//console.log("current[kkey] = "+current[kkey]);
 			}
-			console.log(temp_sum);
+			//console.log(temp_sum);
 			for(var kkey in current)
 			{
-				console.log("QQQQQ");
-				console.log("current[kkey]/temp_sum = "+current[kkey]/temp_sum);
+				//console.log("QQQQQ");
+			//	console.log("current[kkey]/temp_sum = "+ current[kkey]/temp_sum + " key=" + kkey);
 				if(probability((current[kkey]/temp_sum)*100))
 				{
-					console.log("true");
+				//	console.log("true");
 					decision_buffer.push({state:opponent.state(), method:kkey});
-					console.log(decision_buffer[0]);
-					console.log("decision_buffer = "+decision_buffer);
+				//	console.log(decision_buffer[0]);
+				//	console.log("decision_buffer = "+decision_buffer);
 					switch(kkey)
 					{
 						case "Mk":
@@ -116,6 +119,7 @@ function()
 							Lushin();
 							break;
 					}
+					break;
 				}
 				temp_sum -= current[kkey];
 			}
@@ -558,10 +562,10 @@ function()
 		}
 		function BEflee(x,z)
 		{
-			controller.keypress('jump');
+			//controller.keypress('jump');
 			if(x_distance_to_opponent() < 100)
 			{
-				console.log('flee1');
+				//console.log('flee1');
 				if( x >= myself.ps.x && myself.ps.x!==0)
 				{
 					controller.keypress('left',1,1);
@@ -573,7 +577,7 @@ function()
 			}
 			if(z_distance_to_opponent() < 20)
 			{
-				console.log('flee2','dis:',z_distance_to_opponent(),'  z',z,' my_z:',self.ps.z);
+				//console.log('flee2','dis:',z_distance_to_opponent(),'  z',z,' my_z:',self.ps.z);
 				if( z <= myself.ps.z && myself.ps.z!==510)
 				{
 					controller.keypress('down',1,1);
