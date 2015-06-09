@@ -58,17 +58,6 @@ function()
 			//console.log("hp = "+self.health.hp);
 			//console.log("oppo hp = "+opponent.health.hp);
 			//print the result when one's blood === 0
-			if(self.health.hp <= 0 || opponent.health.hp <= 0)
-			{
-				console.log("ADSFdsaffdasfadsfasdfdsfsafafs");
-				console.log("[");
-				for(var i = 0; i <= 16; i = i + 1)
-				{
-					console.log(current_prob[i]);
-				}
-				console.log("]");
-			}
-			
 			//clear the buffer when someone gets hurt and calculate the score 
 			if(opponent.state() === 11)
 			{
@@ -86,9 +75,20 @@ function()
 				for(var i = decision_buffer.length-1; i >= decision_buffer.length - d_score && i > 0 && d_score > 0 ; i = i - 1, d_score = d_score-1)
 				{
 					var temp = decision_buffer[i].method;
-					current_prob[(decision_buffer[i].state)][temp] -= d_score *2;
+					//current_prob[(decision_buffer[i].state)][temp] -= d_score *2;
 				}
 				decision_buffer = [];//clear
+			}
+			
+			if(self.health.hp <= 0 || opponent.health.hp <= 0 )
+			{
+				console.log("ADSFdsaffdasfadsfasdfdsfsafafs");
+				console.log("[");
+				for(var i = 0; i <= 16; i = i + 1)
+				{
+					console.log(current_prob[i]);
+				}
+				console.log("]");
 			}
 			
 			//select an algorithm
