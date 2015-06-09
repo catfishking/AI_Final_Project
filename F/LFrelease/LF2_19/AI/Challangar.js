@@ -72,19 +72,21 @@ function()
 			//clear the buffer when someone gets hurt and calculate the score 
 			if(opponent.state() === 11)
 			{
-				for(var i = 0; i < decision_buffer.length; i = i + 1)
+				d_score = 10;
+				for(var i = decision_buffer.length-1; i >= decision_buffer.length - d_score && i > 0 && d_score > 0 ; i = i - 1, d_score = d_score-1)
 				{
 					var temp = decision_buffer[i].method;
-					current_prob[(decision_buffer[i].state)][temp] += i*2;
+					current_prob[(decision_buffer[i].state)][temp] += d_score*2;
 				}
 				decision_buffer = [];//clear
 			}
 			if(self.state() === 11)
 			{
-				for(var i = 0; i < decision_buffer.length; i = i + 1)
+				d_score = 10;
+				for(var i = decision_buffer.length-1; i >= decision_buffer.length - d_score && i > 0 && d_score > 0 ; i = i - 1, d_score = d_score-1)
 				{
 					var temp = decision_buffer[i].method;
-					current_prob[(decision_buffer[i].state)][temp] -= i*2;
+					current_prob[(decision_buffer[i].state)][temp] -= d_score *2;
 				}
 				decision_buffer = [];//clear
 			}
