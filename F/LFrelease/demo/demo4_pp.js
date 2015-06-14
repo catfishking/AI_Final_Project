@@ -3471,7 +3471,6 @@ return mech;
  * support AI scripting
 \*/
 
-
 define('LF/AI',['F.core/util'],
 function(Futil)
 {
@@ -9571,9 +9570,6 @@ function Manager(package)
 			config: null,
 			package: package
 		});
-		console.log(player[0].selected_AI);
-		console.log(player[0].selected);
-		console.log(player[0].team);
 
 		match.create
 		({
@@ -9585,7 +9581,7 @@ function Manager(package)
 					team: player[0].team
 				},
 				{
-					controller: /*player[1].type==='human'?control1:*/AI_list[1/*player[0].selected_AI*/].data,
+					controller: player[1].type==='human'?control1:AI_list[player[1].selected_AI].data,
 					datanum: player[1].selected,
 					team: player[1].team
 				}
