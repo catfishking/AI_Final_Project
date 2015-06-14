@@ -18,32 +18,78 @@ function()
 		var DfA_cost = 40, DdA_cost = 75, DuA_cost = 225, DuJA_cost = 25;
 		var MK_DfA_rang = 50, MK_DdA_rang = 90, MK_DuA_rang = 60, MK_runA_rang = 150;
 		var MK_z_range = 12, MK_flag_for_11 = true;
+		var oc_hp=500,op_hp=500,mc_hp=500,mp_hp=500,mc_mp=500;
+		Q = [], R = [];
+		var q_ms1=1<<7,q_ms2=2<<7,q_ms3=3<<7,
+				q_x1=1<<4,q_x2=2<<4,q_x3=3<<4,q_x4=4<<4,q_x5=5<<4,q_x6=6<<4,q_y1=1<<3;
+				q_z1=1,q_z2=2,q_z3=3,q_z4=4,q_z5=5;
+		var x_dis=0,z_dis=0,Q_state=0, R_state=0,Q_stateP=0,R_stateP=0;
+		var flag = false,up_flag=false,left_flag=false,stop=false;
+		for(var x = 0; x<1025; x++){
+			Q[x] = [];
+			R[x] = [];
+			for(y = 0; y<129; ++y){
+				if(!(x&(3<<4)) && !(x&7) && y&(1<<2) && !(y&2) && y&1){//att
+					R[x][y] = 20;
+//					Q[x][y] = 20;
+				}
+				else if( x&(1<<7) && x&(1<<4) && !(x&7) && y&1){//running att
+					R[x][y] = 55;//95
+//					Q[x][y] = 95;
+				}
+				else if( x&(1<<7) && x&(1<<4)  && x&(2<<4) && !(x&7) && y&(1<<5) &&y&1 ){//running jump att
+					R[x][y] = 80;
+//					Q[x][y] = 80;
+				}
+//				else if( x|(3<<7)===x && x|(3<<4)===x && x&(2<<1) && y&(1<<5) && y&(1<<2) && y&(1<<4) && y&1 ){
+					//return then jump up(down) left(right) att
+//					R[x][y] = 80;
+//					Q[x][y] = 80;
+//				}
+				// return then jump left(right) att
+//				else if(x|(3<<7)===x && x|(3<<4)===x && !(x&7) && y&(1<<5) && y&(1<<2) && y&1 ){
+//					R[x][y] = 80;
+//					Q[x][y] = 80;
+//				}
+				//jump  left(right) att
+				else if(  x&(1<<4) && x&(4<<4)  && y&(1<<5) && (y&(1<<4) || y&(1<<2)) && y&1 ){
+					R[x][y] = 60;
+//					Q[x][y] = 60;
+				}
+				//jump up(down) left(right) att
+				else if( x&(1<<4) && x&(4<<4) && x&4  && y&(1<<5) && (y&(1<<4)) && y&4 && y&1){
+					R[x][y] = 60;
+//					Q[x][y] = 60;
+				}
+				//encourage approaching
+				else if(y&(1<<4) && !(y&(1<<3)) && y&(1<<2) && !(y&(1<<1))){
+					R[x][y] = 1;				
+				}
+				else{
+					R[x][y]=0;
+				}
+
+//				R[x][y] = 0;
+				Q[x][y] = 0;
+			}
+		}
+
+
+
+//		console.log(contents);
 		
-		var decision_buffer = [];//{state : 11, method : "Lushin"}
-		var current_prob = /*current_prob[10] = {method:score}*/
-		[
-			{Lushin:500, Mk:500},//0
-			{Lushin:500, Mk:500},//1:
-			{Lushin:500, Mk:500},//2:
-			{Lushin:500, Mk:500},//3:
-			{Lushin:500, Mk:500},//4:
-			{Lushin:500, Mk:500},//5:
-			{Lushin:500, Mk:500},//6:
-			{Lushin:500, Mk:500},//7:
-			{Lushin:500, Mk:500},//8:
-			{Lushin:500, Mk:500},//9:
-			{Lushin:500, Mk:500},//10:
-			{Lushin:500, Mk:500},//11:
-			{Lushin:500, Mk:500},//12:
-			{Lushin:500, Mk:500},//13:
-			{Lushin:500, Mk:500},//14:
-			{Lushin:500, Mk:500},//15:
-			{Lushin:500, Mk:500}//16:
-		];
-		
+
 		function id() 
 		{
+			if(stop)
+				return;
+			var R_value=0;
 			reset_keys();
+			Q_stateP=Q_state;
+			Q_state=0;
+			flag = false;left_flag=false;up_flag=false;
+			R_stateP=R_state;
+			R_state=0;
 			for (var i in game_objects)//got opponent
 			{ 
 				if (identify(i) == 0)//get opponent
@@ -54,428 +100,263 @@ function()
 					}
 				}
 			}
-			
-			//console.log("hp = "+self.health.hp);
-			//console.log("oppo hp = "+opponent.health.hp);
-			//print the result when one's blood === 0
-			//clear the buffer when someone gets hurt and calculate the score 
-			if(opponent.state() === 11)
-			{
-				d_score = 10;
-				for(var i = decision_buffer.length-1; i >= decision_buffer.length - d_score && i > 0 && d_score > 0 ; i = i - 1, d_score = d_score-1)
-				{
-					var temp = decision_buffer[i].method;
-					current_prob[(decision_buffer[i].state)][temp] += d_score*2;
-				}
-				decision_buffer = [];//clear
+			op_hp = oc_hp;
+			mp_hp = mc_hp;
+			oc_hp = opponent.health.hp;
+			mc_hp = self.health.hp;
+
+			R_value = -oc_hp + op_hp + mc_hp - mp_hp;
+			Q_state = check_Q_state();//get the current Q state 
+
+			//		console.log('Print:',R_value);
+			//		console.log('??:',R[Q_stateP][R_stateP]);
+			if((R[Q_stateP][R_state]===0 && abs(R_value) > 1 ) || abs(R_value+1) > abs(R[Q_stateP][R_stateP]+1)){
+				R[Q_stateP][R_stateP] = R_value;
 			}
-			if(self.state() === 11)
-			{
-				d_score = 10;
-				for(var i = decision_buffer.length-1; i >= decision_buffer.length - d_score && i > 0 && d_score > 0 ; i = i - 1, d_score = d_score-1)
-				{
-					var temp = decision_buffer[i].method;
-					//current_prob[(decision_buffer[i].state)][temp] -= d_score *2;
-				}
-				decision_buffer = [];//clear
-			}
-			
-			if(self.health.hp <= 0 || opponent.health.hp <= 0 )
-			{
-				console.log("ADSFdsaffdasfadsfasdfdsfsafafs");
-				console.log("[");
-				for(var i = 0; i <= 16; i = i + 1)
-				{
-					console.log(current_prob[i]);
-				}
-				console.log("]");
-			}
-			
-			//select an algorithm
-			var temp_sum = 0, temp = 0;
-			var current = current_prob[opponent.state()];
-			//console.log(current);
-			for(var kkey in current)
-			{
-				temp_sum += current[kkey];
-				//console.log("kkey = "+kkey);
-				//console.log("current[kkey] = "+current[kkey]);
-			}
-			//console.log(temp_sum);
-			for(var kkey in current)
-			{
-				//console.log("QQQQQ");
-			//	console.log("current[kkey]/temp_sum = "+ current[kkey]/temp_sum + " key=" + kkey);
-				if(probability((current[kkey]/temp_sum)*100))
-				{
-				//	console.log("true");
-					decision_buffer.push({state:opponent.state(), method:kkey});
-				//	console.log(decision_buffer[0]);
-				//	console.log("decision_buffer = "+decision_buffer);
-					switch(kkey)
-					{
-						case "Mk":
-							Mk();
-							break;
-						case "Lushin":
-							Lushin();
-							break;
+
+//			if(R[Q_stateP][R_stateP] !==0){
+//				console.log('oh:',oc_hp,' oh_l:',op_hp,' mh:',mc_hp,' mh_l:',mp_hp,' Q:',Q_stateP,' R:',R_stateP);
+//				console.log('R[]',R[Q_stateP][R_stateP]);
+//			}
+
+			Q[Q_stateP][R_stateP] = R[Q_stateP][R_stateP] + 0.08*max_q(Q_state);
+			console.log('Q state value:',Q[Q_stateP][R_stateP],' Q state:',Q_stateP,'R state',R_stateP);
+
+			if(oc_hp <= 0 /*|| mc_hp <= 0*/){
+				stop = true;
+				var output = "",output2 = "";
+				for(var i=0;i<1025;++i){
+					for(var j=0;j<129;++j){
+						output += R[i][j].toString()+" ";
+						output2 += Q[i][j].toString()+" ";
 					}
-					break;
 				}
-				temp_sum -= current[kkey];
+				console.log(output);
+				console.log(output2);
+				return;
 			}
+
+			//		console.log('x:',x_distance_to_opponent(),' z:',z_distance_to_opponent());
+			x_dis = x_distance_to_opponent();
+			z_dis = z_distance_to_opponent();
+			if(self.ps.x > opponent.ps.x)
+				left_flag = true;
+			if(self.ps.z > opponent.ps.z)
+				up_flag = true;
+//			console.log('left',left_flag,'up',up_flag);
+
+
+			if(opponent.state() === 14 || opponent.AI.blink()){
+				BEflee(opponent.ps.x,opponent.ps.z);
+				return;
+			}	
+
+			if(Q_state&(3<<7) && special_move())//check if ai should do special move
+				return;
+
+			if(opponent.state() === 10){//he is being caught
+				controller.keypress('att');
+				return;
+			}
+	
+			if(opponent.state() === 16 && x_dis < 10 && z_dis < 12){
+				if(left_flag)
+					controller.keypress('left',1,1);
+				else
+					controller.keypress('right',1,1);
+				controller.keypress('up',1,1);
+				controller.keypress('down',1,1);
+				return;
+			}
+
+	
+			haha = max_q(Q_state);
+			if(haha >= 1 || ( Math.random()>0.9)){
+				R_state = bestmove();
+				if(R_state !==0){
+					do_move(R_state);
+					return;
+				}
+			}
+			//		console.log(Q_state);
+			//		console.log('sx:',self.ps.x,' sz:',self.ps.z,' ox:',opponent.ps.x,' oz:',opponent.ps.z);
+			R_state = 0;
+			if(Math.random()>0.5){
+				controller.keypress('jump');
+				R_state |= (1<<5);
+			}
+			if(Math.random()>0.5){
+				if(up_flag){
+					controller.keypress('up',1,1);
+					R_state |= (1<<4);
+				}
+				else{
+					controller.keypress('down',1,1);
+					R_state |= (1<<3);
+				}
+			}
+			if(Math.random()>0.5){
+				if(up_flag){
+					controller.keypress('down',1,1);
+					R_state |= (1<<3);
+				}
+				else{
+					controller.keypress('up',1,1);
+					R_state |= (1<<4);
+				}
+			}
+			if(Math.random()>0.5){
+				if(left_flag){
+					controller.keypress('right',1,1);
+					R_state |= (1<<2);
+				}
+				else{
+					controller.keypress('left',1,1);
+					R_state |= (1<<1);
+				}
+			}
+			if(Math.random()>0.5){
+				if(left_flag){
+					controller.keypress('left',1,1);
+					R_state |= (1<<1);
+				}
+				else{
+					controller.keypress('right',1,1);
+					R_state |= (1<<2);
+				}
+			}
+			if(Math.random()>0.5){
+				controller.keypress('att');
+				R_state |= 1;
+			}
+
+
 		}
 
-//algorithms
+		//Q learning
 
-		function Mk()
+		function check_Q_state()
 		{
-			switch(opponent.state())
-			{
-				case 0://standing
-				case 1://walking
-					if(MK_z_inrange())
-					{
-						if(self.state() === 2 && x_distance_to_opponent() < MK_runA_rang )
-						{
-							controller.keypress('att',1,1);
-						}
-						else if(self.health.mp > DuA_cost && x_distance_to_opponent() < MK_DuA_rang  )
-						{
-							DuA();
-						}
-						else if(self.health.mp > DdA_cost && x_distance_to_opponent() < MK_DdA_rang )
-						{
-							DdA();
-						}
-						else if(self.health.mp > DfA_cost && x_distance_to_opponent() < MK_DfA_rang )
-						{
-							DfA();
-						}
-						else if(opponent.ps.x - self.ps.x > 0)
-						{
-							controller.keypress('right',1,1);
-							if(MK_probability(about(25)))
-							{
-								controller.keypress('att',1,1);
-							}
-						}
-						else
-						{
-							controller.keypress('left',1,1);
-							if(MK_probability(about(25)))
-							{
-								controller.keypress('att',1,1);
-							}
-						}	
-					}
-					else
-					{
-						if(opponent.ps.z - self.ps.z > 0)
-						{
-							controller.keypress('down',1,1);
-						}
-						else
-						{
-							controller.keypress('up',1,1);
-						}
-					}	
-					break;
-				case 2://running
-					if(MK_z_inrange())
-					{
-						if(self.state() === 2 && x_distance_to_opponent() < (MK_runA_rang*1.5))
-						{
-							controller.keypress('att',1,1);
-						}
-						else if(self.state() <= 1 && x_distance_to_opponent() < MK_runA_rang)//** oppo running
-						{
-							DdA();
-						}
-						else
-						{
-							DfA();
-						}
-					}
-					else
-					{
-						if(opponent.ps.z - self.ps.z > 0)
-						{
-							controller.keypress('down',1,1);
-						}
-						else
-						{
-							controller.keypress('up',1,1);
-						}
-					}
-					break;
-				case 3://attacking
-					if(MK_z_inrange())
-					{
-						if(self.state() === 2 && x_distance_to_opponent() < MK_runA_rang)
-						{
-							controller.keypress('att',1,1);
-						}
-						else if(self.state() <= 1 && x_distance_to_opponent() < MK_runA_rang)//** oppo running
-						{
-							DdA();
-						}
-						else
-						{
-							approach(opponent.ps.x, opponent.ps.z);
-						}
-					}
-					else
-					{
-						if(opponent.ps.z - self.ps.z > 0)
-						{
-							controller.keypress('down',1,1);
-						}
-						else
-						{
-							controller.keypress('up',1,1);
-						}
-					}
-					break;
-				case 4://jump
-				case 5://leap
-					if(MK_z_inrange())
-					{
-						if(self.state() <= 1 && x_distance_to_opponent() < MK_DuA_rang)
-						{
-							DuA();
-						}
-						else if(self.state() <= 1 && x_distance_to_opponent() < MK_DdA_rang)
-						{
-							DdA();
-						}
-						else if(self.state() === 2 && x_distance_to_opponent() < MK_runA_rang)
-						{
-							controller.keypress('att',1,1);
-						}
-						else
-						{
-							DfA();
-						}
-					}
-					else
-					{
-						if(opponent.ps.z - self.ps.z > 0)
-						{
-							controller.keypress('down',1,1);
-						}
-						else
-						{
-							controller.keypress('up',1,1);
-						}
-					}
-					break;
-				case 6://rolling
-					if(MK_z_inrange() && self.state() <= 1)
-					{
-						DfA();
-					}
-					else
-					{
-						controller.keypress('att',1,1);
-					}
-					break;
-				case 7://defend
-					if(MK_z_inrange())
-					{
-						if(self.health.mp > DuA_cost && x_distance_to_opponent() < MK_DuA_rang)
-						{
-							DuA();
-						}
-						else if(self.health.mp > DdA_cost && x_distance_to_opponent() < MK_DdA_rang)
-						{
-							DdA();
-						}
-						else if(self.health.mp > DfA_cost && MK_probability(about(40)))
-						{
-							DfA();
-						}
-						else
-						{
-							controller.keypress('att',1,1);
-						}
-					}
-					else
-					{
-						if(opponent.ps.z - self.ps.z > 0)
-						{
-							controller.keypress('down',1,1);
-						}
-						else
-						{
-							controller.keypress('up',1,1);
-						}
-					}
-					break;
-				case 8://broken defense
-					controller.keypress('att',1,1);
-					break;
-				case 9://caught someone
-					DfA();
-					break;
-				case 10://get caught
-					if( self.health.mp >= DuA_cost && self.AI.ctimer() < 50)
-					{
-						DuA();
-					}
-					else if( self.health.mp >= DdA_cost && self.AI.ctimer() < 50)
-					{
-						DdA();
-					}
-					else
-					{
-						controller.keypress('att',1,1);
-					}
-					break;
-				case 11://get hit
-					if(MK_flag_for_11 && self.health.mp >= DdA_cost)
-					{
-						DdA();
-						MK_flag_for_11 = false;
-					}
-					else if(self.health.mp >= DuA_cost)
-					{
-						DuA();
-						MK_flag_for_11 = true;
-					}
-					else
-					{
-						controller.keypress('att',1,1);
-						MK_flag_for_11 = true;
-					}
-					break;
-				case 12://in the air
-					if(self.health.mp >= DfA_cost && MK_probability(30))
-					{
-						DfA();
-					}
-					else
-					{
-						controller.keypress('right',1,1);
-						controller.keypress('att',1,1);
-						controller.keypress('right',0,1);
-					}
-					break;
-				case 14://on the ground
-					//must be blinking then?
-					flee(opponent.ps.x, opponent.ps.z);
-					break;
-				case 15://getting up
-					if(opponent.AI.blink() != 0)
-					{
-						flee(opponent.ps.x, opponent.ps.z);
-					}
-					else
-					{
-						if(MK_z_inrange())
-						{
-							if(self.state() === 2 && x_distance_to_opponent() < MK_runA_rang)
-							{
-								controller.keypress('att',1,1);
-							}
-							else if(self.state() <= 1 && x_distance_to_opponent() < MK_DfA_rang)
-							{
-								DfA();
-							}
-							else
-							{
-								approach(opponent.ps.x, opponent.ps.z);
-							}		
-						}
-						else
-						{
-							approach(opponent.ps.x, opponent.ps.z);
-						}
-					}
-					break;
-				case 16://stomachache
-					if(opponent.ps.x - self.ps.x > 0)
-					{
-						controller.keypress('right',1,1);
-					}
-					else
-					{
-						controller.keypress('left',1,1);
-					}
-					break;
-				default:
-					controller.keypress('att',1,1);
-			}
-		
+			var state = 0,tmp=0;
+			if(x_dis <= 65)
+				tmp = 0;
+			else if(x_dis <= 150)
+				tmp = 1;
+			else if(x_dis <= 200)
+				tmp = 2;
+			else if(x_dis <= 220)
+				tmp = 3;
+			else if(x_dis <= 240)
+				tmp = 4;
+			else if(x_dis <= 260)
+				tmp = 5;
+			else
+				tmp = 6;
+			state = state|(tmp<<4);
+			tmp=0	
+			if(opponent.ps.y < 0)
+				tmp = 1;
+			state = state|(tmp<<3);
+			tmp=0;
+			if(z_dis <= 12)
+				tmp = 0;
+			else if(z_dis <=32)
+				tmp = 1;
+			else if(z_dis <=52)
+				tmp = 2;
+			else if(z_dis <= 57)
+				tmp = 3;
+			else if(z_dis <= 77)
+				tmp = 4;
+			else
+				tmp = 5;
+			state = state|tmp;
+			tmp=0;
+			if(self.state === 2)//running
+				tmp = 1;
+			else if(self.ps.y < 0)//flying
+				tmp = 2;
+			else if(self.health.mp > 225)//return move
+				tmp = 3;
+			else
+				tmp = 0;
+			state = state|(tmp<<7);
+			tmp=0;
+			return state;
 		}
-		
-		function Lushin()
+
+		function max_q(Q_state)
 		{
-			switch(opponent.state() ){
-				case 0://standing
-					BEapproach(opponent.ps.x,opponent.ps.z);
-					attack();
-					break;
-				case 1://walking
-					BEapproach(opponent.ps.x,opponent.ps.z);
-					attack();
-					break;
-				case 2://running
-					BEapproach(opponent.ps.x,opponent.ps.z);
-					attack();
-					break;
-				case 3://attack
-					controller.keypress('jump');
-					controller.keypress('att');
-					break;
-				case 4://jump
-					BEapproach(opponent.ps.x,opponent.ps.z);
-					attack();
-					break;
-				case 5://small jump ; dash
-					attack();
-					break;
-				case 6://rowing
-					BEapproach(opponent.ps.x,opponent.ps.z);
-					attack();
-					break;
-				case 7://defending
-					BEapproach(opponent.ps.x,opponent.ps.z);
-					attack();
-					break;
-				case 8://broken defend
-					controller.keypress('att');
-					break;
-				case 9://catching
-					break;
-				case 10://being caught
-					controller.keypress('att');
-					break;
-				case 11://injured
-					controller.keypress('att');
-					break;
-				case 12://falling
-					BEapproach(opponent.ps.x,opponent.ps.z);
-					attack();
-					break;
-				case 14://lying
-					BEflee(opponent.ps.x,opponent.ps.z);
-					break;
-				case 15://return move
-					BEapproach(opponent.ps.x,opponent.ps.z);
-					attack();
-					break;
-				case 16:
-					controller.keypress('att');
-					break;
-				default:
-					controller.keypress('jump');
-					break;
+			var max=-1;
+			for(var x = 0; x<129; ++x){
+				if(Q[Q_state][x] > max)
+					max = Q[Q_state][x];
 			}
+			return max;
 		}
-		
+
+		function bestmove()
+		{
+			var best = 0,tmp=-1;
+			for(var x=0; x<129; ++x){
+				if(Q[Q_state][x] > tmp){
+					tmp = Q[Q_state][x];
+					best = x;
+				}
+			}
+			return best;
+		}
+
+		function do_move(state)
+		{
+			if(state&(1<<5)){
+				controller.keypress('jump');
+			}
+			if(state&(1<<4)){
+				if(up_flag)
+					controller.keypress('up',1,1);
+				else
+					controller.keypress('down',1,1);
+			}
+			if(state&(1<<3)){
+				if(up_flag)
+					controller.keypress('down',1,1);
+				else
+					controller.keypress('up',1,1);
+			}			
+			if(state&(1<<2)){
+				if(left_flag)
+					controller.keypress('left',1,1);
+				else
+					controller.keypress('right',1,1);
+			}
+			if(state&(1<<1)){
+				if(left_flag)
+					controller.keypress('right',1,1);
+				else
+					controller.keypress('left',1,1);
+			}
+			if(state&1)
+				controller.keypress('att');
+		}
+
+
+//Q learning
 //attacks
+//
+		function special_move()
+		{//TODO
+			if(self.ps.y < 0)
+				return false;
+			if(x_dis < 55 && z_dis < 12  && self.health.mp > 225){
+				DuA();
+				return true;}
+			else if(x_dis < 70 && z_dis < 12  && self.health.mp > 40){
+				DdA();
+				return true;}
+
+			return false;
+		}
 
 		function attack()
 		{
@@ -494,6 +375,7 @@ function()
 				}
 		 	}
 		}
+
 		function DfA()
 		{
 			if(opponent.ps.x - self.ps.x > 0)
@@ -565,7 +447,7 @@ function()
 		function BEflee(x,z)
 		{
 			//controller.keypress('jump');
-			if(x_distance_to_opponent() < 100)
+			if(x_distance_to_opponent() < 260)
 			{
 				//console.log('flee1');
 				if( x >= myself.ps.x && myself.ps.x!==0)
@@ -577,7 +459,7 @@ function()
 					controller.keypress('right',1,1);
 				}
 			}
-			if(z_distance_to_opponent() < 20)
+			if(z_distance_to_opponent() < 30)
 			{
 				//console.log('flee2','dis:',z_distance_to_opponent(),'  z',z,' my_z:',self.ps.z);
 				if( z <= myself.ps.z && myself.ps.z!==510)

@@ -27,12 +27,21 @@
       var r = new FileReader();
       r.onload = function(e) { 
 	       contents = e.target.result;
-//        alert( "Got the file.n" 
-//              +"name: " + f.name + "n"
-//              +"type: " + f.type + "n"
-//              +"size: " + f.size + " bytesn"
-//              + "starts with: " + contents.substr(1, contents.indexOf("n"))
-//        );  
+	       contents_num=contents.split(' ');
+		var count = 0;
+		for(var x= 0; x<1025; ++x){
+		   for(var y=0; y<129; ++y){
+			Q[x][y] = contents_num[count];
+			count++;
+		   }
+		}
+		alert('get it');
+	        alert( "Got the file.n" 
+              +"name: " + f.name + "n"
+              +"type: " + f.type + "n"
+              +"size: " + f.size + " bytesn"
+              + "starts with: " + contents.substr(1, contents.indexOf("n"))
+        );  
       }
       r.readAsText(f);
     } else { 

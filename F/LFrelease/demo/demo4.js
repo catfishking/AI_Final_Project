@@ -9359,6 +9359,7 @@ function Manager(package)
 	}
 	this.key=function(i,key)
 	{
+		
 		if( key==='att')
 		{
 			if( step===0)
@@ -9585,7 +9586,7 @@ function Manager(package)
 					team: player[0].team
 				},
 				{
-					controller: /*player[1].type==='human'?control1:*/AI_list[1/*player[0].selected_AI*/].data,
+					controller: /*player[1].type==='human'?*control1:*/AI_list[1/*player[1].selected_AI*/].data,
 					datanum: player[1].selected,
 					team: player[1].team
 				}
