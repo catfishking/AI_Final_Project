@@ -7,6 +7,7 @@
 </head>
 
 <body>
+
 <div class='LFroot'>
 	<div class='LFcontainer'>
 		<div class='windowCaption'>
@@ -14,6 +15,62 @@
 				F.LF development demo
 			</div>
 			<div class='windowCaptionButtonBar'>
+
+<input type="file" id="fileinput" />
+<script type="text/javascript">
+  function readSingleFile(evt) {
+    //Retrieve the first (and only!) File from the FileList object
+    
+    var f = evt.target.files[0]; 
+
+    if (f) {
+      var r = new FileReader();
+      r.onload = function(e) { 
+	       contents = e.target.result;
+//        alert( "Got the file.n" 
+//              +"name: " + f.name + "n"
+//              +"type: " + f.type + "n"
+//              +"size: " + f.size + " bytesn"
+//              + "starts with: " + contents.substr(1, contents.indexOf("n"))
+//        );  
+      }
+      r.readAsText(f);
+    } else { 
+      alert("Failed to load file");
+    }
+  }
+
+  document.getElementById('fileinput').addEventListener('change', readSingleFile, false);
+</script>
+
+<input type="file" id="fileinput" />
+<script type="text/javascript">
+  function readSingleFile(evt) {
+    //Retrieve the first (and only!) File from the FileList object
+    
+    var f = evt.target.files[0]; 
+
+    if (f) {
+      var r = new FileReader();
+      r.onload = function(e) { 
+	       contents2 = e.target.result;
+//        alert( "Got the file.n" 
+//              +"name: " + f.name + "n"
+//              +"type: " + f.type + "n"
+//              +"size: " + f.size + " bytesn"
+//              + "starts with: " + contents.substr(1, contents.indexOf("n"))
+//        );  
+      }
+      r.readAsText(f);
+    } else { 
+      alert("Failed to load file");
+    }
+  }
+
+  document.getElementById('fileinput').addEventListener('change', readSingleFile, false);
+</script>
+
+
 				<div class='maximizeButton'><span class='unisym'>&#9723;</span></div>
 				<div class='settingsButton'><span class='unisym'>&#9000;</span> keys</div>
 				<a class='ProjectFbutton'
