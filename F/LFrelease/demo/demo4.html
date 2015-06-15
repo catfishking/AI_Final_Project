@@ -22,6 +22,7 @@
     //Retrieve the first (and only!) File from the FileList object
     
     var f = evt.target.files[0]; 
+	fname = f.name;
 
     if (f) {
       var r = new FileReader();
@@ -31,7 +32,7 @@
 		var count = 0;
 		for(var x= 0; x<1025; ++x){
 		   for(var y=0; y<129; ++y){
-			Q[x][y] = contents_num[count];
+			Q[x][y] = parseFloat(contents_num[count]);
 			count++;
 		   }
 		}
@@ -52,32 +53,6 @@
   document.getElementById('fileinput').addEventListener('change', readSingleFile, false);
 </script>
 
-<input type="file" id="fileinput" />
-<script type="text/javascript">
-  function readSingleFile(evt) {
-    //Retrieve the first (and only!) File from the FileList object
-    
-    var f = evt.target.files[0]; 
-
-    if (f) {
-      var r = new FileReader();
-      r.onload = function(e) { 
-	       contents2 = e.target.result;
-//        alert( "Got the file.n" 
-//              +"name: " + f.name + "n"
-//              +"type: " + f.type + "n"
-//              +"size: " + f.size + " bytesn"
-//              + "starts with: " + contents.substr(1, contents.indexOf("n"))
-//        );  
-      }
-      r.readAsText(f);
-    } else { 
-      alert("Failed to load file");
-    }
-  }
-
-  document.getElementById('fileinput').addEventListener('change', readSingleFile, false);
-</script>
 
 
 				<div class='maximizeButton'><span class='unisym'>&#9723;</span></div>

@@ -62,17 +62,21 @@ function()
 //					Q[x][y] = 60;
 				}
 				//encourage approaching
-				else if(y&(1<<4) && !(y&(1<<3)) && y&(1<<2) && !(y&(1<<1))){
+				else if( /*(y&(1<<4) && !(y&(1<<3))) ||*/ (y&(1<<2) && !(y&(1<<1))) ){
 					R[x][y] = 1;				
 				}
+				//encourage approaching
+				else if( !(x&7) && (y&(1<<4) && !(y&(1<<3))) && !(y&2))
+					R[x][y] = 1;
 				else{
 					R[x][y]=0;
 				}
 
-//				R[x][y] = 0;
+				R[x][y] = 0;
 				Q[x][y] = 0;
 			}
 		}
+		console.log('Q inited.......................');
 
 
 
@@ -81,8 +85,16 @@ function()
 
 		function id() 
 		{
+			
 			if(stop)
 				return;
+
+			if(self.state()===16 || self.state()===12 || self.state()===14 )
+			{
+				return;
+			}
+
+
 			var R_value=0;
 			reset_keys();
 			Q_stateP=Q_state;
@@ -118,20 +130,20 @@ function()
 //				console.log('oh:',oc_hp,' oh_l:',op_hp,' mh:',mc_hp,' mh_l:',mp_hp,' Q:',Q_stateP,' R:',R_stateP);
 //				console.log('R[]',R[Q_stateP][R_stateP]);
 //			}
+			Q[Q_stateP][R_stateP] = R[Q_stateP][R_stateP] + 0.8*max_q(Q_state);
+			console.log('Q state value:',Q[Q_stateP][R_stateP],' Q state:',Q_stateP,'R state',R_stateP,'state',
+					self.state(),' R value:',R[Q_stateP][R_stateP]);
 
-			Q[Q_stateP][R_stateP] = R[Q_stateP][R_stateP] + 0.08*max_q(Q_state);
-			console.log('Q state value:',Q[Q_stateP][R_stateP],' Q state:',Q_stateP,'R state',R_stateP);
-
-			if(oc_hp <= 0 /*|| mc_hp <= 0*/){
+			if(oc_hp <= 0 || mc_hp <= 0 ){
 				stop = true;
 				var output = "",output2 = "";
 				for(var i=0;i<1025;++i){
 					for(var j=0;j<129;++j){
-						output += R[i][j].toString()+" ";
+//						output += R[i][j].toString()+" ";
 						output2 += Q[i][j].toString()+" ";
 					}
 				}
-				console.log(output);
+//				console.log(output);
 				console.log(output2);
 				return;
 			}
@@ -144,7 +156,6 @@ function()
 			if(self.ps.z > opponent.ps.z)
 				up_flag = true;
 //			console.log('left',left_flag,'up',up_flag);
-
 
 			if(opponent.state() === 14 || opponent.AI.blink()){
 				BEflee(opponent.ps.x,opponent.ps.z);
@@ -169,9 +180,15 @@ function()
 				return;
 			}
 
+			if(x_dis > 300)
+			{
+				approach(opponent.ps.x,opponent.ps.z);
+				return;
+			}
+
 	
 			haha = max_q(Q_state);
-			if(haha >= 1 || ( Math.random()>0.9)){
+			if( (haha!==0 && Math.random() < haha/(haha+5))){
 				R_state = bestmove();
 				if(R_state !==0){
 					do_move(R_state);
@@ -459,7 +476,7 @@ function()
 					controller.keypress('right',1,1);
 				}
 			}
-			if(z_distance_to_opponent() < 30)
+			else if(z_distance_to_opponent() < 30)
 			{
 				//console.log('flee2','dis:',z_distance_to_opponent(),'  z',z,' my_z:',self.ps.z);
 				if( z <= myself.ps.z && myself.ps.z!==510)
