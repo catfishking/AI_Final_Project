@@ -439,7 +439,7 @@ function()
 		{
 			if(self.ps.y < 0)
 				return false;
-			if(x_dis < 55 && z_dis < 12 && opponent.ps.y < self.ps.y && self.health.mp > 225){
+			if(x_dis < 55 && z_dis < 12 && self.health.mp > 225){
 				DuA();
 				return true;}
 			else if(x_dis < 70 && z_dis < 12 && opponent.ps.y > -12 && self.health.mp > 40){
