@@ -2,7 +2,9 @@
 ****
 ###Using Q Learning
 >*Designed for Davis*
-  
+>
+>*The AI file is F/LFrealse/LF2_19/AI/Challangar.js*
+
 Player2 would always be our ai(Challangar.js)
 
 因為每次點開遊戲都會被初始話
